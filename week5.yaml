@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Academy Demo CloudFormation
+
+Parameters:
+  MyBucketName:
+    Description: My bucket name
+    Type: String
+    Default: gosia-week5-2
+  QueName:
+    Description: Gosia's queue name
+    Type: String
+    Default: gosia-week5-queue-2
+  SwedenDefaultVPC:
+    Type: String
+    Default: vpc-08517d6a53e26b1a1
+  LoadBalancerHTTPPort:
+    Type: Number
+    Default: 80
+  SwedenDefaultSubnetA:
+    Type: String
+    Default: subnet-098e12e5a5124e1e1
+  SwedenDefaultSubnetB:
+    Type: String
+    Default: subnet-065115c105196eb3f
+  MyIP:
+    Type: String 
+    Default: 0.0.0.0
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+  
+Resources:
+  MyBucketResources:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref MyBucketName
+  MyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref QueName
+  Ec2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: t3.micro
+  GosiaALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'security group for load balancer'
+      VpcId: !Ref SwedenDefaultVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref LoadBalancerHTTPPort
+          ToPort: !Ref LoadBalancerHTTPPort
+          CidrIp: !Sub ${MyIP}/32
+  GosiaLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref GosiaALBSecurityGroup
+      Subnets:
+        - !Ref SwedenDefaultSubnetA
+        - !Ref SwedenDefaultSubnetB
+      
+  
