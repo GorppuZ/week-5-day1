@@ -6,9 +6,17 @@ Parameters:
   Description: My bucket name
   Type: String
   Default: gosia-week5
+ QueName:
+  Description: Gosia's queue name
+  Type: String
+  Default: gosia-week5-que
 
 Resources:
   MyBucketResources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref MyBucketName
+  MyQueue:
+   Type: AWS::SQS::Queue
+   Properties:
+    QueueName: !Ref QueName
